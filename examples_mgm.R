@@ -1,7 +1,7 @@
 # jonashaslbeck@gmail.com
 
-figDir <- '/Users/jmb/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_code/jss_code/'
-
+# !!! Fill in Directory where figures should be saved !!!
+figDir <- getwd()
 
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
@@ -9,13 +9,12 @@ figDir <- '/Users/jmb/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_code/jss_code/'
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
 
-# install.pacakges('mgm') # from CRAN
-library(devtools)
-install_github('jmbh/mgm') # for developmental version
-
+install.packages('mgm') # from CRAN
+# library(devtools)
+# install_github('jmbh/mgm') # for developmental version
 library(mgm)
-
 library(qgraph)
+
 
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
@@ -119,6 +118,9 @@ head(mgm_data$data)
 
 data("autism_data_large")
 
+dim(autism_data_large$data)
+
+
 # Fit MGM Model
 set.seed(1)
 fit_ADS <- mgm(data = autism_data_large$data, 
@@ -157,8 +159,6 @@ head(PTSD_data$data)
 
 # ----- Fit Model -----
 
-apply(PTSD_data$data, 2, function(x) length(unique(x)))
-
 set.seed(1)
 fit_mgmk <- mgm(data = PTSD_data$data, 
                 type = PTSD_data$type, 
@@ -168,7 +168,7 @@ fit_mgmk <- mgm(data = PTSD_data$data,
                 overparameterize = TRUE)
 
 
-fit_mgmk$factorgraph
+fit_mgmk$rawfactor$indicator
 
 
 # ----- Factor Graph Visualization -----

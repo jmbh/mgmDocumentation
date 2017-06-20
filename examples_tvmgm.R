@@ -1,7 +1,7 @@
 # jonashaslbeck@gmail.com
 
-figDir <- '/Users/jmb/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_code/jss_code/'
-codeDir <- "/Users/jmb/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_code/jss_code/"
+# !!! Fill in Directory where figures should be saved !!!
+figDir <- codeDir <- getwd()
 
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
@@ -9,13 +9,12 @@ codeDir <- "/Users/jmb/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_code/jss_code/"
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
 
-# install.pacakges('mgm') # from CRAN
-library(devtools)
-install_github('jmbh/mgm') # for developmental version
-
+install.packages('mgm') # from CRAN
+# library(devtools)
+# install_github('jmbh/mgm') # for developmental version
 library(mgm)
-
 library(qgraph)
+
 
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
@@ -31,16 +30,20 @@ n <- nrow(fruitfly_data$data)
 # -------------------- Estimating Bandwidth parameter --------------------
 
 set.seed(1)
-# Note: This can take a while ~1h on a MacBook Pro
-bw_tvmgm <- bwSelect(data = fruitfly_data$data, 
-                     type = rep('g', p), 
-                     level = rep(1, p), 
-                     bwSeq = c(0.1, 0.2, 0.3, 0.4), 
-                     bwFolds = 5,
-                     bwFoldsize = 5,
-                     modeltype = 'mgm', k = 2, 
-                     threshold = 'none', ruleReg = 'OR',
-                     timepoints = fruitfly_data$timevector)
+
+# Note: This can take a while ~1h on a MacBook Pro; we therefore provide the output as an RDS file
+# bw_tvmgm <- bwSelect(data = fruitfly_data$data, 
+#                      type = rep('g', p), 
+#                      level = rep(1, p), 
+#                      bwSeq = c(0.1, 0.2, 0.3, 0.4), 
+#                      bwFolds = 5,
+#                      bwFoldsize = 5,
+#                      modeltype = 'mgm', k = 2, 
+#                      threshold = 'none', ruleReg = 'OR',
+#                      timepoints = fruitfly_data$timevector)
+# saveRDS(bw_tvmgm, file = paste0(codeDir, "bw_tvmgm.RDS"))
+
+bw_tvmgm <- readRDS(file=paste0(codeDir, "bw_tvmgm.RDS"))
 
 round(bw_tvmgm$meanError, 3)
 which.min(bw_tvmgm$meanError)
@@ -59,8 +62,6 @@ fit_tvmgm <- tvmgm(data = fruitfly_data$data,
                    threshold = "none", 
                    ruleReg = "OR")
 
-fit_tvmgm$pairwise$wadj
-
 # get wadj
 wadj <- fit_tvmgm$pairwise$wadj
 adj <- wadj
@@ -69,18 +70,19 @@ adj[adj!=0]<-1
 # number of edges across estimation points
 n_edges <- apply(adj, 3, sum)/2
 
+# saveRDS(fit_tvmgm, file = paste0(codeDir, 'fit_tvmgm.RDS'))
 
 
 # -------------------- Make Predictions from time-varying MGM --------------------
 
 pred_tvmgm <- predict(object = fit_tvmgm,
                       data = fruitfly_data$data, 
-                      tvErrorType = "weighted")
-
+                      tvMethod = "weighted")
 
 
 # -------------------- Visualizing Mixed Graphical Models --------------------
 
+n <- nrow(fruitfly_data$data)
 estpoints <- seq(0, n, length=20)
 
 # Selected estimation points 
@@ -175,8 +177,9 @@ points(estpoints/67, n_edges, pch=20)
 lines(estpoints/67, n_edges, pch=20)
 
 # Plot data: proportion used Sample size
-points(estpoints/67, prop_n*250, pch=21)
-lines(estpoints/67, prop_n*250, pch=20, lty=2)
+rel_y <- 250/67
+points(estpoints/67, fit_tvmgm$Ne*rel_y, pch=21)
+lines(estpoints/67, fit_tvmgm$Ne*rel_y, pch=20, lty=2)
 
 # legend
 legend(.6, 210, c('Number of Edges', 'Local n'), lty=1:2, pch=20:21, bty='n', cex=1.4)

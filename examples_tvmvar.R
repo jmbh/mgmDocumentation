@@ -1,7 +1,7 @@
 # jonashaslbeck@gmail.com
 
-figDir <- '/Users/jmb/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_code/jss_code/'
-codeDir <- "/Users/jmb/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_code/jss_code/"
+# !!! Fill in Directory where figures should be saved !!!
+figDir <- codeDir <- getwd()
 
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
@@ -9,12 +9,10 @@ codeDir <- "/Users/jmb/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_code/jss_code/"
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
 
-# install.pacakges('mgm') # from CRAN
-library(devtools)
-install_github('jmbh/mgm') # for developmental version
-
+install.packages('mgm') # from CRAN
+# library(devtools)
+# install_github('jmbh/mgm') # for developmental version
 library(mgm)
-
 library(qgraph)
 
 # ----------------------------------------------------------------------------------------------------
@@ -54,9 +52,10 @@ table(fit_tvmvar$call$data_lagged$included)
 
 pred_tvmvar <- predict(object = fit_tvmvar, 
                        data = symptom_data$data,
-                       tvMethod = "weighted")
+                       tvMethod = "weighted", 
+                       consec = symptom_data$data_time$beepno)
 
-pred_tvmvar$errors
+# pred_tvmvar$errors
 
 
 # -------------------- Visualizing time-varying mixed VAR Model --------------------

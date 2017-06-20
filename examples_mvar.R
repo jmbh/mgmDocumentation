@@ -1,6 +1,7 @@
 # jonashaslbeck@gmail.com
 
-figDir <- '/Users/jmb/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_code/jss_code/'
+# !!! Fill in Directory where figures should be saved !!!
+figDir <- getwd()
 
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
@@ -8,12 +9,10 @@ figDir <- '/Users/jmb/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_code/jss_code/'
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
 
-# install.pacakges('mgm') # from CRAN
-library(devtools)
-install_github('jmbh/mgm') # for developmental version
-
+install.packages('mgm') # from CRAN
+# library(devtools)
+# install_github('jmbh/mgm') # for developmental version
 library(mgm)
-
 library(qgraph)
 
 # ----------------------------------------------------------------------------------------------------
@@ -43,7 +42,6 @@ pred_mgm <- predict(object = fit_mvar,
                     errorCon = c("RMSE", "R2"),
                     errorCat = c("CC", "nCC"))
 
-pred_mgm$
 pred_mgm$errors
 
 
@@ -127,14 +125,14 @@ rs_mvar <- mvar(data = restingstate_data$data,
 # Download & read brain image
 library(httr)
 url='https://raw.githubusercontent.com/jmbh/mgmDocumentation/master/files/brainpic.jpg'
-GET(url, write_disk("brainpic.jpg", overwrite=TRUE))
+GET(url, write_disk(paste0(figDir,"brainpic.jpg"), overwrite=TRUE))
 library(jpeg) 
-img <- readJPEG(source="brainpic.jpg", native=FALSE)
+img <- readJPEG(source=paste0(figDir,"brainpic.jpg"), native=FALSE)
 
 
 # Plotting
 width <- 6
-pdf('Fig_mvar_application.pdf', width = width, height = width/3)
+pdf(paste0(figDir, 'Fig_mvar_application.pdf'), width = width, height = width/3)
 
 par(mfrow=c(1, 3), mar = c(1, 1, 2, 1))
 for(i in c(1, 2, 3)) {
