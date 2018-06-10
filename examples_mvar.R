@@ -1,7 +1,4 @@
-# jonashaslbeck@gmail.com
-
-# !!! Fill in Directory where figures should be saved !!!
-figDir <- getwd()
+# jonashaslbeck@gmail.com, May 2018
 
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
@@ -9,9 +6,10 @@ figDir <- getwd()
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
 
-install.packages('mgm') # from CRAN
-# library(devtools)
-# install_github('jmbh/mgm') # for developmental version
+# install.pacakges('mgm') # from CRAN
+library(devtools)
+install_github('jmbh/mgm') # for developmental version
+
 library(mgm)
 library(qgraph)
 
@@ -24,15 +22,16 @@ library(qgraph)
 
 # -------------------- Estimating mVAR --------------------
 
-set.seed(1)
+mvar_data
+
 fit_mvar <- mvar(data = mvar_data$data, 
                  type = c("c", "c", "c", "c", "g", "g"),
                  level = c(2, 2, 4, 4, 1, 1),
-                 lambdaSel = "CV",
-                 lambdaFolds = 10, 
+                 lambdaSel = "EBIC",
+                 lambdaGam = .25, 
                  lags = 1)
 
-round(fit_mvar$wadj[,,1], 2)
+round(fit_mvar$wadj[, , 1], 2)
 
 
 # -------------------- Making Predictions from mVAR --------------------
@@ -86,7 +85,7 @@ coefarray <- array(0, dim=c(p, p, max_level, max_level, n_lags))
 coefarray[5, 6, 1, 1, 1] <- .4
 # Lagged effect 1 <- 5
 coefarray[1, 5, 1:level[1], 1:level[5], 1] <- c(0, 1)
-# Lagged effect 2 <- 4
+# Lagged effect 1 <- 3
 m1 <- matrix(0, nrow=level[2], ncol=level[4])
 m1[1,1:2] <- 1
 m1[2,3:4] <- 1
@@ -105,6 +104,7 @@ mvar_data <- mvarsampler(coefarray = coefarray,
                          pbar = TRUE)
 
 
+
 # -------------------- Application: Resting State fMRI Data --------------------
 
 p <- ncol(restingstate_data$data)
@@ -115,13 +115,15 @@ set.seed(1)
 rs_mvar <- mvar(data = restingstate_data$data, 
                 type = rep("g", p), 
                 level = rep(1, p), 
-                lambdaSel = "CV",
-                lambdaFolds = 10,
+                lambdaSel = "EBIC",
+                lambdaGam = 0.25,
                 lags = c(1,2,3))
 
 
 # ---------- Plotting ----------
 
+
+figDir <- '/Volumes/Macintosh HD 2/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_code/jss_code/figures/'
 # Download & read brain image
 library(httr)
 url='https://raw.githubusercontent.com/jmbh/mgmDocumentation/master/files/brainpic.jpg'

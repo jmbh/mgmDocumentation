@@ -1,7 +1,8 @@
-# jonashaslbeck@gmail.com
+# jonashaslbeck@gmail.com; May 2018
 
-# !!! Fill in Directory where figures should be saved !!!
-figDir <- codeDir <- getwd()
+codeDir <- '/Volumes/Macintosh HD 2/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_code/jss_code/'
+figDir <- '/Volumes/Macintosh HD 2/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_code/jss_code/figures/'
+fileDir <- '/Volumes/Macintosh HD 2/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_code/jss_code/files/'
 
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
@@ -9,12 +10,12 @@ figDir <- codeDir <- getwd()
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
 
-install.packages('mgm') # from CRAN
-# library(devtools)
-# install_github('jmbh/mgm') # for developmental version
+# install.pacakges('mgm') # from CRAN
+library(devtools)
+install_github('jmbh/mgm') # for developmental version
+
 library(mgm)
 library(qgraph)
-
 
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
@@ -23,27 +24,24 @@ library(qgraph)
 # ----------------------------------------------------------------------------------------------------
 
 head(fruitfly_data$data[,1:5])
-p <- ncol(fruitfly_data$data)
-n <- nrow(fruitfly_data$data)
-
 
 # -------------------- Estimating Bandwidth parameter --------------------
 
 set.seed(1)
+# Note: This can take a while ~1h on a MacBook Pro
+p <- ncol(fruitfly_data$data)
+bw_tvmgm <- bwSelect(data = fruitfly_data$data, 
+                     type = rep('g', p), 
+                     level = rep(1, p), 
+                     bwSeq = c(0.1, 0.2, 0.3, 0.4), 
+                     bwFolds = 5,
+                     bwFoldsize = 5,
+                     modeltype = 'mgm', k = 2, 
+                     threshold = 'none', ruleReg = 'OR',
+                     timepoints = fruitfly_data$timevector)
 
-# Note: This can take a while ~1h on a MacBook Pro; we therefore provide the output as an RDS file
-# bw_tvmgm <- bwSelect(data = fruitfly_data$data, 
-#                      type = rep('g', p), 
-#                      level = rep(1, p), 
-#                      bwSeq = c(0.1, 0.2, 0.3, 0.4), 
-#                      bwFolds = 5,
-#                      bwFoldsize = 5,
-#                      modeltype = 'mgm', k = 2, 
-#                      threshold = 'none', ruleReg = 'OR',
-#                      timepoints = fruitfly_data$timevector)
 # saveRDS(bw_tvmgm, file = paste0(codeDir, "bw_tvmgm.RDS"))
-
-bw_tvmgm <- readRDS(file=paste0(codeDir, "bw_tvmgm.RDS"))
+bw_tvmgm <- readRDS(file = paste0(fileDir, "bw_tvmgm.RDS"))
 
 round(bw_tvmgm$meanError, 3)
 which.min(bw_tvmgm$meanError)
@@ -56,11 +54,14 @@ fit_tvmgm <- tvmgm(data = fruitfly_data$data,
                    type = rep("g", p), 
                    level = rep(1, p), 
                    timepoints = fruitfly_data$timevector,
-                   estpoints = seq(0, n, length=20),
+                   estpoints = seq(0, 1, length=20),
                    k = 2,
                    bandwidth = 0.3, 
                    threshold = "none", 
                    ruleReg = "OR")
+
+# saveRDS(fit_tvmgm, file = paste0(codeDir, 'fit_tvmgm.RDS'))
+fit_tvmgm <- readRDS(file = paste0(fileDir, 'fit_tvmgm.RDS'))
 
 # get wadj
 wadj <- fit_tvmgm$pairwise$wadj
@@ -70,7 +71,6 @@ adj[adj!=0]<-1
 # number of edges across estimation points
 n_edges <- apply(adj, 3, sum)/2
 
-# saveRDS(fit_tvmgm, file = paste0(codeDir, 'fit_tvmgm.RDS'))
 
 
 # -------------------- Make Predictions from time-varying MGM --------------------
@@ -82,7 +82,7 @@ pred_tvmgm <- predict(object = fit_tvmgm,
 
 # -------------------- Visualizing Mixed Graphical Models --------------------
 
-n <- nrow(fruitfly_data$data)
+n <- nrow( fruitfly_data$data)
 estpoints <- seq(0, n, length=20)
 
 # Selected estimation points 
@@ -99,7 +99,7 @@ tv <- tv / max(tv)
 
 # Color shade for Nodes
 wDegree <- list()
-for(i in 1:20)  {wDegree[[i]] <- colSums(adj[,,i]) + 1; wDegree[[i]][wDegree[[i]]>9]<-9}
+for(i in 1:20)  wDegree[[i]] <- colSums(adj[,,i]) + 1; wDegree[[i]][wDegree[[i]]>9]<-9
 n_color <- max(unlist(wDegree))
 node_cols <- RColorBrewer::brewer.pal(n_color, 'Blues')
 

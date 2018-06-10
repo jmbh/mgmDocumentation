@@ -1,7 +1,9 @@
-# jonashaslbeck@gmail.com
+# jonashaslbeck@gmail.com; June 2018
 
-# !!! Fill in Directory where figures should be saved !!!
-figDir <- codeDir <- getwd()
+codeDir <- '/Volumes/Macintosh HD 2/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_code/jss_code/'
+figDir <- '/Volumes/Macintosh HD 2/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_code/jss_code/figures/'
+fileDir <- '/Volumes/Macintosh HD 2/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_code/jss_code/files/'
+
 
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
@@ -9,9 +11,10 @@ figDir <- codeDir <- getwd()
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
 
-install.packages('mgm') # from CRAN
-# library(devtools)
-# install_github('jmbh/mgm') # for developmental version
+# install.pacakges('mgm') # from CRAN
+library(devtools)
+install_github('jmbh/mgm') # for developmental version
+
 library(mgm)
 library(qgraph)
 
@@ -27,35 +30,47 @@ n <- nrow(symptom_data$data)
 length(unique(symptom_data$data_time$dayno))
 
 
+# Delete variables with close to zero variance
+ind_var <- apply(symptom_data$data, 2, sd)
+ind_keep <- ind_var > .1
+table(ind_keep) # we delete three variables
+
+symptom_data$data <- symptom_data$data[, ind_keep]
+symptom_data$type <- symptom_data$type[ind_keep]
+symptom_data$level <- symptom_data$level[ind_keep]
+symptom_data$groups <- symptom_data$groups[ind_keep]
+symptom_data$colnames <- symptom_data$colnames[ind_keep]
+
+
 # -------------------- Estimating time-varying mixed VAR model --------------------
 
 set.seed(1)
 fit_tvmvar <- tvmvar(data = symptom_data$data,
                      type = symptom_data$type,
-                     level = symptom_data$level,
-                     consec = symptom_data$data_time$beepno,
+                     level = symptom_data$level, 
+                     beepvar = symptom_data$data_time$beepno,
+                     dayvar = symptom_data$data_time$dayno,
                      lags = 1,
-                     estpoints = seq(0, n - 1, length=20),
+                     estpoints = seq(0, 1, length=20),
                      bandwidth = 0.2,
                      threshold = "none",
                      saveData = TRUE)
 
-# Example consec
-symptom_data$data_time$beepno[1:10]
+# saveRDS(fit_tvmvar, file = paste0(fileDir, "fit_tvmvar.RDS"))
+fit_tvmvar <- readRDS(file = paste0(fileDir, "fit_tvmvar.RDS"))
 
 # Check how much excluded
-table(fit_tvmvar$call$data_lagged$included)
-
-
+fit_tvmvar
 
 # -------------------- Make Predictions time-varying mixed VAR model --------------------
 
 pred_tvmvar <- predict(object = fit_tvmvar, 
                        data = symptom_data$data,
                        tvMethod = "weighted", 
-                       consec = symptom_data$data_time$beepno)
+                       beepvar = symptom_data$data_time$beepno,
+                       dayvar = symptom_data$data_time$dayno)
 
-# pred_tvmvar$errors
+pred_tvmvar$errors
 
 
 # -------------------- Visualizing time-varying mixed VAR Model --------------------
@@ -112,7 +127,7 @@ group_cols <- alpha(RColorBrewer::brewer.pal(n_groups, 'Set1'), .5)
 
 
 # create plot for layout
-wadj_av <- matrix(apply(fit_tvmvar$wadj, 1:3, mean), 51, 51)
+wadj_av <- matrix(apply(fit_tvmvar$wadj, 1:3, mean), 48, 48)
 Q <- qgraph(wadj_av, 
             layout = 'spring')
 
@@ -184,10 +199,10 @@ axis(2, round(seq(-.2, .4, length=9), 2), las=2)
 title(ylab = 'Parameter value', line =3.5)
 
 # Legend 
-legend(.4, .38, c('Worrying -> Worrying', 
+legend(.4, .19, c('Worrying -> Worrying', 
                  'Tired -> Tired',
                  'Selflike -> Down'), lwd = 1.5, col = col_es[1:3], bty = 'n')
-legend(.7, .38, c('Concentration -> Down',
+legend(.7, .19, c('Concentration -> Down',
                  'Selflike -> Ashamed',
                  'Strong -> Self doubt'), lwd = 1.5, col = col_es[4:6], bty = 'n')
 

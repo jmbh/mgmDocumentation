@@ -1,7 +1,7 @@
 # jonashaslbeck@gmail.com
 
-# !!! Fill in Directory where figures should be saved !!!
-figDir <- getwd()
+figDir <- '/Volumes/Macintosh HD 2/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_code/jss_code/figures/'
+
 
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
@@ -9,9 +9,11 @@ figDir <- getwd()
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
 
-install.packages('mgm') # from CRAN
-# library(devtools)
-# install_github('jmbh/mgm') # for developmental version
+# install.pacakges('mgm') # from CRAN
+library(devtools)
+install_github('jmbh/mgm') # for developmental version
+.rs.restartR()
+
 library(mgm)
 library(qgraph)
 
@@ -32,9 +34,15 @@ fit_mgm <- mgm(data = mgm_data$data,
                k = 2, 
                lambdaSel = "CV",
                lambdaFolds = 10,
-               ruleReg = "AND")
+               ruleReg = "AND", overparameterize = TRUE)
 
+int24 <- showInteraction(fit_mgm, int=c(2,3))
+
+int24$parameters
 round(fit_mgm$pairwise$wadj, 2)
+
+showInteraction(object = fit_mgm, 
+                int = c(1,4))
 
 
 # -------------------- Making Predictions from Mixed Graphical Models --------------------
@@ -51,9 +59,12 @@ pred_mgm$errors
 
 # install.packages('qgraph')
 library(qgraph)
-errors <- c(pred_mgm$errors[1, 3], pred_mgm$errors[2:3, 4], pred_mgm$errors[4, 3])
+errors <- c(pred_mgm$errors[1, 3], 
+            pred_mgm$errors[2:3, 4], 
+            pred_mgm$errors[4, 3])
 
-pdf(paste0(figDir,'Fig_mgm_p4_example.pdf'), width = 7, height = 4)
+sc <- .8
+pdf(paste0(figDir,'Fig_mgm_p4_example.pdf'), width = 7*sc, height = 4*sc)
 set.seed(1)
 qgraph(fit_mgm$pairwise$wadj, 
        edge.color = fit_mgm$pairwise$edgecolor, 
@@ -63,6 +74,24 @@ qgraph(fit_mgm$pairwise$wadj,
        legend = TRUE,
        vsize = 15, 
        esize = 20, mar=c(7,7,7,7))
+dev.off()
+
+
+# -------------------- Bootstrap Sampling Distributions --------------------
+
+set.seed(1)
+res_obj <- resample(object = fit_mgm, 
+                    data = mgm_data$data, 
+                    nB = 50, 
+                    quantiles = c(.05, .95))
+
+sc <- 1.5
+pdf(paste0(figDir,'Fig_mgm_p4_resampling.pdf'), width = 6*sc, height = 4*sc)
+plotRes(object = res_obj, 
+        quantiles = c(.05, .95), 
+        cex.label = 1.25, 
+        lwd.qtl = 2.5, 
+        cex.mean = .5)
 dev.off()
 
 
@@ -116,10 +145,7 @@ head(mgm_data$data)
 
 # -------------------- Application: Autism and Quality of Life --------------------
 
-data("autism_data_large")
-
 dim(autism_data_large$data)
-
 
 # Fit MGM Model
 set.seed(1)
@@ -132,7 +158,7 @@ fit_ADS <- mgm(data = autism_data_large$data,
 
 # Make plot
 width <- 9
-pdf(paste0(figDir,'Fig_mgm_application_Autism.pdf'), width = width, height = width*.7)
+pdf(paste0(figDir,'Fig_mgm_application_Autism.pdf'), width = width, height = width*.6)
 
 qgraph(fit_ADS$pairwise$wadj, 
        layout = 'spring', repulsion = 1.3,
@@ -156,7 +182,6 @@ autism_data_large$level[c(6,7,27)]
 
 head(PTSD_data$data)
 
-
 # ----- Fit Model -----
 
 set.seed(1)
@@ -164,59 +189,35 @@ fit_mgmk <- mgm(data = PTSD_data$data,
                 type = PTSD_data$type, 
                 level = PTSD_data$level,
                 k = 3, 
-                lambdaSel = "CV", 
+                lambdaSel = "EBIC", 
+                lambdaGam = .25, 
                 overparameterize = TRUE)
 
-
-fit_mgmk$rawfactor$indicator
+fit_mgmk$interactions$indicator
 
 
 # ----- Factor Graph Visualization -----
-
-
-# List of estimated interactions
-fit_mgmk$rawfactor$indicator
-
-# Compute Label vector
-labels <- c(PTSD_data$names, rep(2, 3), rep(3, 5))
-
-# Visualize factor graph using qgraph()
-library(RColorBrewer)
-cols <- brewer.pal(5, 'Set1')
-node.color <- c('white', cols[1:3], rep('white', 2+8))
 
 width <- 8
 pdf(paste0(figDir,'Fig_mgm_HOI.pdf'), width = width, height = width*.5)
 
 par(mfrow=c(1,2))
 
-set.seed(1)
-qgraph(fit_mgmk$factorgraph$graph,
-       color = node.color,
-       edge.color = fit_mgmk$factorgraph$edgecolor,
-       layout = 'spring',
-       labels =  labels,
-       shape = c('circle', 'square')[fit_mgmk$factorgraph$nodetype+1],
-       vsize = c(8, 4)[fit_mgmk$factorgraph$nodetype+1], 
-       mar = c(5,5,5,5))
+FactorGraph(object = fit_mgmk, 
+            labels = PTSD_data$names, 
+            PairwiseAsEdge = FALSE)
 
-mtext('(a)', side = 1, line=3)
-
-plot.new()
-par(mar=c(2,2,2,2))
-mtext('(b)', side = 1)
-
+# Second panel is added manually with Adobe Illustrator (see code below)
 
 dev.off()
 
 
-
-
-# ----- Create Three (conditional) 2-way tables (add with inkscape to above factor graph viz) -----
+# ----- Create Three (conditional) 2-way tables (add with Illustrator to above plot) -----
 
 # conditional 2-way table
 i <- c(4,2,3)
 PTSD_data$names[c(i[1],i[2],i[3])]
+
 tb <- table(PTSD_data$data[,i[1]],
             PTSD_data$data[,i[2]],
             PTSD_data$data[,i[3]])
