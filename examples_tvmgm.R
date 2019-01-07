@@ -1,8 +1,4 @@
-# jonashaslbeck@gmail.com; May 2018
-
-codeDir <- '/Volumes/Macintosh HD 2/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_code/jss_code/'
-figDir <- '/Volumes/Macintosh HD 2/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_code/jss_code/figures/'
-fileDir <- '/Volumes/Macintosh HD 2/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_code/jss_code/files/'
+# jonashaslbeck@gmail.com; January 2019
 
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
@@ -10,12 +6,14 @@ fileDir <- '/Volumes/Macintosh HD 2/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_cod
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
 
-# install.pacakges('mgm') # from CRAN
-library(devtools)
-install_github('jmbh/mgm') # for developmental version
-
-library(mgm)
+library(mgm) # 1.2-5
 library(qgraph)
+
+# !!! Make sure to set the working directory to the path of the present R-file !!!
+
+figDir <- "figures"
+codeDir <- ""
+fileDir <- "files"
 
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------

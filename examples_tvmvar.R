@@ -1,9 +1,4 @@
-# jonashaslbeck@gmail.com; June 2018
-
-codeDir <- '/Volumes/Macintosh HD 2/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_code/jss_code/'
-figDir <- '/Volumes/Macintosh HD 2/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_code/jss_code/figures/'
-fileDir <- '/Volumes/Macintosh HD 2/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_code/jss_code/files/'
-
+# jonashaslbeck@gmail.com; January 2019
 
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
@@ -11,12 +6,14 @@ fileDir <- '/Volumes/Macintosh HD 2/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_cod
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
 
-# install.pacakges('mgm') # from CRAN
-library(devtools)
-install_github('jmbh/mgm') # for developmental version
-
-library(mgm)
+library(mgm) # 1.2-5
 library(qgraph)
+
+# !!! Make sure to set the working directory to the path of the present R-file !!!
+
+figDir <- "figures"
+codeDir <- ""
+fileDir <- "files"
 
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
@@ -29,23 +26,10 @@ p <- ncol(symptom_data$data)
 n <- nrow(symptom_data$data)
 length(unique(symptom_data$data_time$dayno))
 
-
-# Delete variables with close to zero variance
-ind_var <- apply(symptom_data$data, 2, sd)
-ind_keep <- ind_var > .1
-table(ind_keep) # we delete three variables
-
-symptom_data$data <- symptom_data$data[, ind_keep]
-symptom_data$type <- symptom_data$type[ind_keep]
-symptom_data$level <- symptom_data$level[ind_keep]
-symptom_data$groups <- symptom_data$groups[ind_keep]
-symptom_data$colnames <- symptom_data$colnames[ind_keep]
-
-
 # -------------------- Estimating time-varying mixed VAR model --------------------
 
 set.seed(1)
-fit_tvmvar <- tvmvar(data = symptom_data$data,
+fit_tvmvar <- tvmvar(data = symptom_data$data, # Takes ~15 min
                      type = symptom_data$type,
                      level = symptom_data$level, 
                      beepvar = symptom_data$data_time$beepno,
@@ -59,7 +43,7 @@ fit_tvmvar <- tvmvar(data = symptom_data$data,
 # saveRDS(fit_tvmvar, file = paste0(fileDir, "fit_tvmvar.RDS"))
 fit_tvmvar <- readRDS(file = paste0(fileDir, "fit_tvmvar.RDS"))
 
-# Check how much excluded
+# Check how much daat has been used
 fit_tvmvar
 
 # -------------------- Make Predictions time-varying mixed VAR model --------------------

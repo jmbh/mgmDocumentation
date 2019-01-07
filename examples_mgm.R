@@ -1,7 +1,4 @@
-# jonashaslbeck@gmail.com
-
-figDir <- '/Volumes/Macintosh HD 2/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_code/jss_code/figures/'
-
+# jonashaslbeck@gmail.com; January 2019
 
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
@@ -9,14 +6,12 @@ figDir <- '/Volumes/Macintosh HD 2/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_code
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
 
-# install.pacakges('mgm') # from CRAN
-library(devtools)
-install_github('jmbh/mgm') # for developmental version
-.rs.restartR()
-
-library(mgm)
+library(mgm) # 1.2-5
 library(qgraph)
 
+# !!! Make sure to set the working directory to the path of the present R-file !!!
+
+figDir <- "figures/"
 
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
@@ -236,7 +231,9 @@ tbm
 library(scales)
 cex_text <- 1.7
 cex_text_yn <- 1.5
-nC3 <- cols
+
+library(RColorBrewer)
+nC3 <- brewer.pal(3, "Set1")
 
 pdf(paste(figDir, 'Table1_Marg.pdf'), width = 8, height = 8)
 

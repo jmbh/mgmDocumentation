@@ -1,4 +1,4 @@
-# jonashaslbeck@gmail.com, May 2018
+# jonashaslbeck@gmail.com, January 2019
 
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
@@ -6,12 +6,12 @@
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
 
-# install.pacakges('mgm') # from CRAN
-library(devtools)
-install_github('jmbh/mgm') # for developmental version
-
-library(mgm)
+library(mgm) # 1.2-5
 library(qgraph)
+
+# !!! Make sure to set the working directory to the path of the present R-file !!!
+
+figDir <- "figures/"
 
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
@@ -21,8 +21,6 @@ library(qgraph)
 
 
 # -------------------- Estimating mVAR --------------------
-
-mvar_data
 
 fit_mvar <- mvar(data = mvar_data$data, 
                  type = c("c", "c", "c", "c", "g", "g"),
@@ -55,9 +53,7 @@ qgraph(t(fit_mvar$wadj[,,1]),
        edge.color = t(fit_mvar$edgecolor[,,1]), 
        pie = errors, 
        pieColor = c(rep("tomato", 4), rep("lightblue", 2)),
-       nodeNames = c(paste0("Categorical; m = ", c(2,2,4,4)), rep("Gaussian", 2)),
-       vsize = 8,  esize = 13, asize = 7, mar=c(7,7,7,7)
-)
+       nodeNames = c(paste0("Categorical; m = ", c(2,2,4,4)), rep("Gaussian", 2)))
 dev.off()
 
 
@@ -107,14 +103,12 @@ mvar_data <- mvarsampler(coefarray = coefarray,
 
 # -------------------- Application: Resting State fMRI Data --------------------
 
-p <- ncol(restingstate_data$data)
-
 # ---------- Fit Model ----------
 
 set.seed(1)
 rs_mvar <- mvar(data = restingstate_data$data, 
-                type = rep("g", p), 
-                level = rep(1, p), 
+                type = rep("g", 68), 
+                level = rep(1, 68), 
                 lambdaSel = "EBIC",
                 lambdaGam = 0.25,
                 lags = c(1,2,3))
@@ -122,8 +116,6 @@ rs_mvar <- mvar(data = restingstate_data$data,
 
 # ---------- Plotting ----------
 
-
-figDir <- '/Volumes/Macintosh HD 2/Dropbox/MyData/_PhD/__projects/mgm_JSS/4_code/jss_code/figures/'
 # Download & read brain image
 library(httr)
 url='https://raw.githubusercontent.com/jmbh/mgmDocumentation/master/files/brainpic.jpg'
