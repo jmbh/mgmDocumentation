@@ -112,7 +112,7 @@ group_cols <- alpha(RColorBrewer::brewer.pal(n_groups, 'Set1'), .5)
 
 # create plot for layout
 wadj_av <- matrix(apply(fit_tvmvar$wadj, 1:3, mean), 48, 48)
-Q <- qgraph(wadj_av, 
+Q <- qgraph(t(wadj_av), 
             layout = 'spring')
 
 # Prepare Edges over time
@@ -131,9 +131,8 @@ l_es[[5]] <- wadj_w_sign[18, 17, 1, ] # Selflike -> Ashamed
 l_es[[6]] <- wadj_w_sign[19, 12, 1, ] # Strong -> Self doubt
 
 
+
 # -------------------- Plotting --------------------
-
-
 
 pdf(paste0(figDir, 'Fig_tvmvar_application.pdf'), width = 8, height = 8)
 
